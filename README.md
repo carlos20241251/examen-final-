@@ -456,3 +456,180 @@ sudo systemctl restart keepalived
 sudo systemctl status keepalived
 
 http://floating-ip
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+! LABORATORIO VI ! 
+==================== Comandos usados practica 1 ====================
+
+su
+date
+sudo apt update
+sudo apt install gnupg2 -y
+
+**Crear un directorio y un archivo**
+
+mkdir /prueba_gpg
+cd /prueba_gpg
+echo "Archivo de verificación" > secreto.txt
+
+**Generar una clave GPG (si no tienes una)** 
+gpg2 --full-generate-key
+
+**Verifica que la clave se creó:**
+gpg2 --list-keys
+
+**Cifrar el archivo**
+gpg2 -e -r "TuNombre" secreto.txt
+cat secreto.txt.gpg
+
+**Descifrar el archivo**
+gpg2 -d secreto.txt.gpg
+
+
+==================== Comandos usados practica 2 =================================================================
+
+su 
+date 
+sudo systemctl status ssh apache2 vsftpd
+sudo apt update
+sudo apt install iptables -y
+sudo apt install iptables-persistent -y
+
+sudo iptables -L -n -v
+
+sudo iptables -A INPUT -p tcp --dport 22 -j DROP
+sudo iptables -A INPUT -p tcp --dport 80 -j DROP
+sudo iptables -A INPUT -p tcp --dport 21 -j DROP
+
+sudo iptables -L INPUT -n -v
+
+sudo iptables -D INPUT -p tcp --dport 22 -j DROP
+sudo iptables -D INPUT -p tcp --dport 80 -j DROP
+sudo iptables -D INPUT -p tcp --dport 21 -j DROP
+
+
+**ufw**
+
+**instalar ssh**
+sudo apt update
+sudo apt install -y openssh-server
+
+**# Instalar UFW**
+sudo apt update
+sudo apt install ufw -y
+
+**# Verificar estado**
+sudo ufw status
+
+**# Habilitar UFW**
+sudo ufw enable
+
+bloquear
+sudo ufw deny 22/tcp
+sudo ufw deny 80/tcp
+sudo ufw deny 21/tcp
+
+permitir
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw allow ftp
+
+
+==================== Comandos usados practica 3 ====================
+
+su
+date
+nano /etc/apt/sources.list
+
+**agregar**
+
+#Repositorios principales
+deb http://us.archive.ubuntu.com/ubuntu/ focal main restricted
+deb http://us.archive.ubuntu.com/ubuntu/ focal-updates main restricted
+
+#Repositorios universe y multiverse
+deb http://us.archive.ubuntu.com/ubuntu/ focal universe
+deb http://us.archive.ubuntu.com/ubuntu/ focal-updates universe
+deb http://us.archive.ubuntu.com/ubuntu/ focal multiverse
+deb http://us.archive.ubuntu.com/ubuntu/ focal-updates multiverse
+
+#Repositorios de seguridad
+deb http://security.ubuntu.com/ubuntu focal-security main restricted
+deb http://security.ubuntu.com/ubuntu focal-security universe
+deb http://security.ubuntu.com/ubuntu focal-security multiverse
+
+
+**Keys para activar los repositorios:**
+
+sudo apt-key export 3B4FE6ACC0B21F32 | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/ubuntu-keyring-3B4FE6ACC0B21F32.gpg
+sudo apt-key export 871920D1991BC93C | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/ubuntu-keyring-871920D1991BC93C.gpg
+
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C
+
+cd /etc/apt/preferences.d
+nano ubuntu.pref
+
+Package: *
+Pin: release o=Ubuntu
+Pin-Priority: 50
+
+apt-get update
+apt-get install snort -y
+
+*eth0--**Lo dejamos asi 
+
+Ingresamos IP y borramos el ultimo octeto
+
+**Ponen su interfaz de red** 
+
+cd /etc/snort
+ls -l
+nano snort.conf
+
+**step 8**
+include $RULE_PATH/local.rules
+
+cd rules
+ls -l
+nano local.rules
+
+**Reglas**
+alert icmp any any -> $HOME_NET any (msg: "Trafico ICMP detectado"; sid: 100001; rev:1;)
+alert tcp any any -> $HOME_NET 21 (msg: "Trafico FTP detectado"; sid: 100002; rev:1;)
+alert tcp any any -> $HOME_NET 22 (msg: "Trafico SSH detectado"; sid: 100003; rev:1;)
+alert tcp any any -> $HOME_NET 80 (msg: "Trafico HTTP detectado"; sid: 100004; rev:1;)
+
+sudo systemctl restart snort
+sudo systemctl start snort
+sudo systemctl status snort
+
+
+**Comprobar conexiones** 
+sudo snort -A console -q -u snort -g snort -c /etc/snort/snort.conf -i ens33
+
+
+==================== Comandos usados practica 4 ====================
+
+sudo apt install libpam-google-authenticator
+
+sudo nano /etc/pam.d/sshd
+
+Al inicio (eliminar la repetida)
+auth required pam_google_authenticator.so
+@include common-auth
+account required pam_nologin.so
+
+
+sudo nano /etc/ssh/sshd_config
+
+al inicio
+UsePAM yes
+ChallengeResponseAuthentication yes
+PasswordAuthentication yes
+
+google-authenticator
+
+sudo systemctl restart ssh
+sudo systemctl restart sshd.service
+
+ssh lavoe@ip
